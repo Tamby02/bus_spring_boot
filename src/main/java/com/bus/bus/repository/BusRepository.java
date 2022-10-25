@@ -18,14 +18,17 @@ import com.bus.bus.model.Bus;
 
 public interface BusRepository extends JpaRepository<Bus, Long> {
 
-    @Query(value = "SELECT * FROM bus_tana",nativeQuery=true)
+    @Query(value = "SELECT * FROM bus",nativeQuery=true)
     List<Bus> findMany();
 
     @Query(value = "SELECT * FROM arret WHERE nom LIKE %:keyword%", nativeQuery = true)
     Iterable<Object> searchArret(@Param("keyword") String keyword);
 
-    @Query(value = "SELECT bus_tana.id, nom FROM bus_tana INNER JOIN arret_bus b ON b.id_bus = bus_tana.id WHERE b.id_arret = :id_arret", nativeQuery = true)
+    @Query(value = "SELECT bus.id, nom FROM bus INNER JOIN bus_arret b ON b.id_bus = bus.id WHERE b.id_arret = :id_arret", nativeQuery = true)
     List<Bus> selectAllBusInArret(@Param("id_arret") Long id_arret);
+
+    @Query(value = "SELECT id_arret_arrive FROM trajet WHERE id_arret_depart=:id_depart;",nativeQuery=true)
+    List<Long> getVoisin(@Param("id_depart") Long id_depart);
 
 }
 

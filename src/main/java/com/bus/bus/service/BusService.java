@@ -33,6 +33,10 @@ public class BusService {
         return busRepository.selectAllBusInArret(id_arret);
     }
 
+    public List<Long> getVoisin(Long id_depart) {
+        return busRepository.getVoisin(id_depart);
+    }
+
     // public void deleteBus(final Long id) {
     //     busRepository.deleteById(id);
     // }

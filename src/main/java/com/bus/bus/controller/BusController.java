@@ -1,5 +1,6 @@
 package com.bus.bus.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,16 +41,54 @@ public class BusController {
         return busService.selectAllBusInArret(Long.parseLong(body.get("id_arret").toString()));
     }
 
+    // Get the common bus between two vertices
+    public List<Bus> check_bus_commun(Long id_depart, Long id_arrive) {
+        List<Bus> busDepart = busService.selectAllBusInArret(id_depart);
+        List<Bus> busArrive = busService.selectAllBusInArret(id_arrive);
+
+        List<Bus> bus_list = new ArrayList<Bus>();
+
+        for(Bus bus_depart:busDepart) {
+            for(Bus bus_arrive:busArrive) {
+                if(bus_depart.getId() == bus_arrive.getId()){
+                    bus_list.add(bus_depart);
+                }
+            }
+        }
+        return bus_list;
+    }
+
+    
+
     @PostMapping("/coupMin")
     public List<Bus> coupMin(@RequestBody Map<String, Object> body) {
-        String id_depart = body.get("id_depart").toString();
-        String id_arrive = body.get("id_arrive").toString();
+        Long id_depart = Long.parseLong(body.get("id_depart").toString());
+        Long id_arrive = Long.parseLong(body.get("id_arrive").toString());
+        //List<Bus> bus_result = new ArrayList<Bus>();
 
-        List<Bus> busDepart = busService.selectAllBusInArret(Long.parseLong(id_depart));
-        List<Bus> busArrive = busService.selectAllBusInArret(Long.parseLong(id_arrive));
+        Long temp_id = id_arrive;
+        List<Long> file_in_progress = new ArrayList<Long>();
+        List<Long> file_done = new ArrayList<Long>();
 
-        
+        while(true) {
+            List<Bus> bus_commun = check_bus_commun(id_depart, temp_id);
+            if(bus_commun.size() != 0) {
+                return bus_commun;
+            } 
+            else {
+                List<Long> new_voisin = busService.getVoisin(temp_id);
+                for(Long voisin:new_voisin) {
+                    if(!file_done.contains(voisin)){
+                        file_in_progress.add(voisin);
+                    }
+                }
+                temp_id = file_in_progress.get(0);
+                file_in_progress.remove(0);
+                file_done.add(temp_id);
+            }
 
-        return busDepart;
+        }   
+
+        //return null;
     }
 }
