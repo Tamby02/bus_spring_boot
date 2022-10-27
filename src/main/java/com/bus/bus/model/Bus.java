@@ -11,11 +11,11 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "bus")
+@Table(name = "bus_tana")
 public class Bus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(name = "nom")
     private String name;

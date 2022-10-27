@@ -1,8 +1,8 @@
 package com.bus.bus.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bus.bus.model.Bus;
+import com.bus.bus.model.Trajet;
 import com.bus.bus.service.BusService;
 
 @RestController
@@ -20,6 +21,7 @@ public class BusController {
 
     @Autowired
     private BusService busService;
+
 
     @GetMapping("/allBus")
     public List<Bus> getAllBus() {
@@ -38,56 +40,39 @@ public class BusController {
 
     @PostMapping("/selectAllBusInArret")
     public List<Bus> selectAllBusInArret(@RequestBody Map<String, Object> body) {
-        return busService.selectAllBusInArret(Long.parseLong(body.get("id_arret").toString()));
+        return busService.selectAllBusInArret((int)body.get("id_arret"));
     }
 
     // Get the common bus between two vertices
-    public List<Bus> check_bus_commun(Long id_depart, Long id_arrive) {
-        List<Bus> busDepart = busService.selectAllBusInArret(id_depart);
-        List<Bus> busArrive = busService.selectAllBusInArret(id_arrive);
+    // public List<Bus> check_bus_commun(int id_depart, int id_arrive) {
+    //     List<Bus> busDepart = busService.selectAllBusInArret(id_depart);
+    //     List<Bus> busArrive = busService.selectAllBusInArret(id_arrive);
 
-        List<Bus> bus_list = new ArrayList<Bus>();
+    //     List<Bus> bus_list = new ArrayList<Bus>();
 
-        for(Bus bus_depart:busDepart) {
-            for(Bus bus_arrive:busArrive) {
-                if(bus_depart.getId() == bus_arrive.getId()){
-                    bus_list.add(bus_depart);
-                }
-            }
-        }
-        return bus_list;
+    //     for(Bus bus_depart:busDepart) {
+    //         for(Bus bus_arrive:busArrive) {
+    //             if(bus_depart.getId() == bus_arrive.getId()){
+    //                 bus_list.add(bus_depart);
+    //             }
+    //         }
+    //     }
+    //     return bus_list;
+    // }
+
+    @PostMapping("/getListTrajet")
+    public List<Trajet> getListTrajet(@RequestBody Map<String, Object> body) { 
+        return busService.getNeighbor((int)(body.get("id_depart")));
     }
-
-    
-
     @PostMapping("/coupMin")
-    public List<Bus> coupMin(@RequestBody Map<String, Object> body) {
-        Long id_depart = Long.parseLong(body.get("id_depart").toString());
-        Long id_arrive = Long.parseLong(body.get("id_arrive").toString());
-        //List<Bus> bus_result = new ArrayList<Bus>();
+    public List<Node> coupMin(@RequestBody Map<String, Object> body) {
 
-        Long temp_id = id_arrive;
-        List<Long> file_in_progress = new ArrayList<Long>();
-        List<Long> file_done = new ArrayList<Long>();
+        Djikstra djikstra = new Djikstra(busService);
 
-        while(true) {
-            List<Bus> bus_commun = check_bus_commun(id_depart, temp_id);
-            if(bus_commun.size() != 0) {
-                return bus_commun;
-            } 
-            else {
-                List<Long> new_voisin = busService.getVoisin(temp_id);
-                for(Long voisin:new_voisin) {
-                    if(!file_done.contains(voisin)){
-                        file_in_progress.add(voisin);
-                    }
-                }
-                temp_id = file_in_progress.get(0);
-                file_in_progress.remove(0);
-                file_done.add(temp_id);
-            }
-
-        }   
+        List<Node> nodes = djikstra.findPath((int)(body.get("id_depart")), (int)(body.get("id_arrive")));
+            
+        System.out.println(nodes);
+        return nodes;
 
         //return null;
     }
